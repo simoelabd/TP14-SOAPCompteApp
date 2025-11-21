@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.SOAPCompteApp" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Couleurs personnalisables (facultatif) -->
+        <item name="colorPrimary">@android:color/holo_blue_light</item>
+        <item name="colorPrimaryContainer">@android:color/holo_blue_dark</item>
+        <item name="colorSecondary">@android:color/holo_green_light</item>
+    </style>
+
+</resources>
