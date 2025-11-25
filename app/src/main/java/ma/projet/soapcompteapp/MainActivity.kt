@@ -18,6 +18,7 @@ import ma.projet.soapcompteapp.beans.TypeCompte
 import ma.projet.soapcompteapp.ws.Service
 
 class MainActivity : AppCompatActivity() {
+
     private lateinit var recyclerView: RecyclerView
     private lateinit var btnAdd: Button
     private val adapter = CompteAdapter()
@@ -33,17 +34,13 @@ class MainActivity : AppCompatActivity() {
         loadComptes()
     }
 
-    /**
-     * Initialise les vues.
-     */
+    /** Initialise les vues */
     private fun initViews() {
         recyclerView = findViewById(R.id.recyclerView)
         btnAdd = findViewById(R.id.fabAdd)
     }
 
-    /**
-     * Configure le RecyclerView.
-     */
+    /** Configure la RecyclerView */
     private fun setupRecyclerView() {
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
@@ -70,16 +67,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Configure les listeners.
-     */
+    /** Bouton Ajouter */
     private fun setupListeners() {
         btnAdd.setOnClickListener { showAddCompteDialog() }
     }
 
-    /**
-     * Affiche la boîte de dialogue pour ajouter un compte.
-     */
+    /** Popup d'ajout */
     private fun showAddCompteDialog() {
         val dialogView = layoutInflater.inflate(R.layout.popup, null)
 
@@ -90,7 +83,19 @@ class MainActivity : AppCompatActivity() {
                 val etSolde = dialogView.findViewById<TextInputEditText>(R.id.etSolde)
                 val radioCourant = dialogView.findViewById<RadioButton>(R.id.radioCourant)
 
-                val solde = etSolde.text.toString().toDoubleOrNull() ?: 0.0
+                val soldeText = etSolde.text?.toString()?.trim() ?: ""
+
+                if (soldeText.isEmpty()) {
+                    Toast.makeText(this, "Veuillez saisir un solde.", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+
+                val solde = soldeText.toDoubleOrNull()
+                if (solde == null) {
+                    Toast.makeText(this, "Solde invalide.", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+
                 val type = if (radioCourant.isChecked) TypeCompte.COURANT else TypeCompte.EPARGNE
 
                 lifecycleScope.launch(Dispatchers.IO) {
@@ -98,7 +103,7 @@ class MainActivity : AppCompatActivity() {
                     withContext(Dispatchers.Main) {
                         if (success) {
                             Toast.makeText(this@MainActivity, "Compte ajouté.", Toast.LENGTH_SHORT).show()
-                            loadComptes()
+                            loadComptes() // recharge la liste
                         } else {
                             Toast.makeText(this@MainActivity, "Erreur lors de l'ajout.", Toast.LENGTH_SHORT).show()
                         }
@@ -109,19 +114,13 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    /**
-     * Charge la liste des comptes depuis le service SOAP.
-     */
+    /** Appel SOAP pour récupérer la liste */
     private fun loadComptes() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val comptes = service.getComptes()
                 withContext(Dispatchers.Main) {
-                    if (comptes.isNotEmpty()) {
-                        adapter.updateComptes(comptes)
-                    } else {
-                        Toast.makeText(this@MainActivity, "Aucun compte trouvé.", Toast.LENGTH_SHORT).show()
-                    }
+                    adapter.updateComptes(comptes) // mise à jour toujours — même si liste vide
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
